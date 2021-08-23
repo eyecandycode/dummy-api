@@ -82,7 +82,7 @@ function Search() {
       }
     );
 
-    // if field left empty, don't filter
+    // if field is left empty, the filter is bypassed
     const filtered = res.data.data
       .filter((post) => {
         // User's name

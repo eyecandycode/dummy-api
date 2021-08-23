@@ -1,70 +1,96 @@
-# Getting Started with Create React App
+# Dummy-Api
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Getting started
 
-## Available Scripts
+To get it going, first rename `.env.example` to `.env` and inside the file replace `00000000000000000` with a valid api key for [http://dummyapi.io](http://dummyapi.io):
 
-In the project directory, you can run:
+Then run:
 
-### `yarn start`
+### `npm install`
+
+To install dependencies. Then:
+
+### `npm start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `yarn test`
+## Different data fetching method
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Before making two separate API calling functions in diffent components, I tried making a reusable hook (see ReadMe folder) - that would be utilisable by both the `Posts` and `Search` components. This proved to be more unwieldy than elegant, so I separated out the logic.
 
-### `yarn build`
+## Wrangling the graph data
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Before settling on using React-D3-Graph I tried a few other libraries, and these were some of my workings for organising data in objects in different ways for the differing APIs.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```javascript
+// Creating an object with tags as keys, and array of users (or string if single) as the value
+const obj = {};
+posts.forEach((post) => {
+  let fullName;
+  users.forEach((user, i) => {
+    if (user.id === post.owner.id) {
+      fullName = `${user.firstName} ${user.lastName}`;
+    }
+  });
+  post.tags.forEach((t) => {
+    if (Object.keys(obj).indexOf(t) === -1) {
+      obj[t] = fullName;
+    } else {
+      obj[t] = [].concat.apply([], [fullName, obj[t]]);
+    }
+  });
+});
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+/*
+ * Turning the above into an array of objects. This was unnecessary
+ * and over-complicating for formatting data for React-D3-Graph
+ */
 
-### `yarn eject`
+let arr = [];
+const objectArray = Object.entries(obj);
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+objectArray.forEach(([key, value]) => {
+  if (typeof value === Object) {
+    value.forEach((v) => {
+      arr.push({
+        source: key,
+        target: v,
+      });
+    });
+  } else {
+    arr.push({
+      source: key,
+      target: value,
+    });
+  }
+});
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+// This method for getting a unique array of objects was favoured
+let a = [];
+posts.forEach((post) => {
+  post.tags.forEach((tag) => {
+    const fullName = `${post.owner.firstName} ${post.owner.lastName}`;
+    a.push({
+      source: tag,
+      target: fullName,
+    });
+  });
+});
+a = [...new Set(a)];
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+var result = a.reduce((unique, o) => {
+  if (
+    !unique.some((obj) => obj.source === o.source && obj.target === o.target)
+  ) {
+    unique.push(o);
+  }
+  return unique;
+}, []);
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Git history
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+I built the app using Vite, and on completion found adding polyfills to it problematic - so I ported it over to use Create React App for IE11 compatibility. The Git history, as a result doesn't show the build's progression.

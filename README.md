@@ -17,11 +17,21 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ---
 
-## Different data fetching method
+## Features
+
+The app consists of three sections:
+
+1. Latest posts feed, with pagination and next page pre-fetch
+2. Post search engine which filters by poster's name, post text and tags
+3. Network graph of the relationship between posts and tags from posts shown on the selected page of the latest post section
+
+## Notes
+
+### Different data fetching method
 
 Before making two separate API calling functions in diffent components, I tried making a reusable hook (see ReadMe folder) - that would be utilisable by both the `Posts` and `Search` components. This proved to be more unwieldy than elegant, so I separated out the logic.
 
-## Wrangling the graph data
+### Wrangling the graph data
 
 Before settling on using React-D3-Graph I tried a few other libraries, and these were some of my workings for organising data in objects in different ways for the differing APIs.
 
@@ -91,6 +101,6 @@ var result = a.reduce((unique, o) => {
 }, []);
 ```
 
-## Git history
+### Git history
 
 I built the app using Vite, and on completion found adding polyfills to it problematic - so I ported it over to use Create React App for IE11 compatibility. The Git history, as a result doesn't show the build's progression.
